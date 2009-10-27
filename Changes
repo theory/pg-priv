@@ -1,0 +1,53 @@
+Revision history for Perl extension DBIx::Connection.
+
+
+0.21
+      - Compatibility change: Additional arguments to `run()`, `txn()`, and
+        `svp()` are no longer passed on to the execution of the block, since
+        they are immediately available to the closure, anyway. This simplifies
+        things for integrated exception handling (next item).
+      - Added integrated exception-handling support to `run()`, `txn()`, and
+        `svp()`. Thanks to Mark Lawrence for the suggestion.
+      - Removed the undocumented `savepoint()`, `release()`, and
+        `rollback_to()` methods from DBIx::Connector, since those methods are
+        in the drivers, and so were redundant.
+      - Fixed the `author` section of `META.yml`.
+
+0.20  2009-10-20T22:33:00
+      - Compatibility changes:
+        + Added `run()`, `txn()`, and `svp()` as replacements for `do()`,
+          `txn_do()`, and `svp_do()`. The latter will issue a warning when
+          called, and be removed in two releases.
+        + Eliminated caching and mod_perl special-casing.
+      - Fixed the GitHub links for realz.
+      - Updated minimum required Test::More to 0.88 so that testing classes
+        with `isa_ok()` will work as expected. Thanks to mlawren for the spot.
+      - Fixed bug passing arguments on retry in `txn()`. Thanks to [Mark
+        Lawrence](http://github.com/mlawren) for the pull request.
+      - Fixed a bug in `txn()` where it would fail to notify other blocks that
+        it was running the block when the user started a transaction.
+      - Changed `dbh()` so that it does not call `ping()` when it is called
+        from within a code reference passed to a `run*()` method.
+      - Made the docs with regard to the re-execution of a code reference
+        passed to `run()` and friends in fixup mode more accurate, thanks to
+        Tim Bunce.
+      - Fetching a cached database handle now always checks its `Active`
+        attribute as well as different process and thread IDs. The only thing
+        not always done is `ping`ing the database.
+      - Added `with()`.
+
+0.12  2009-10-06T16:29:16
+      - Fixed the GitHub links, which were still using the old name.
+      - Removed `use feature` and `use utf8` from `t/pod-coverage.t` -- those
+        were pastos from another project.
+      - Removed `use DBD::SQLite` from DBix::Connector::Driver::SQLite. It
+        will already have been loaded by the time that code loads.
+
+0.11  2009-10-05T22:05:29
+      - Filled in the important details in the README.
+      - Changed name from DBIx::Connection to DBIx::Connector, as there is
+        already a module called DBIx::Connection on the CPAN.
+
+0.10  2009-10-05T21:16:03
+      - Initial version, with code borrowed from DBIx::Class, Apache::DBI,
+        Catalyst::Model::DBI, and various other locales.
