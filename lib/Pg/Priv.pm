@@ -14,6 +14,7 @@ BEGIN {
         w => 'UPDATE',
         a => 'INSERT',
         d => 'DELETE',
+        D => 'TRUNCATE',
         x => 'REFERENCE',
         t => 'TRIGGER',
         X => 'EXECUTE',
@@ -42,7 +43,7 @@ sub parse_acl {
         $role ||= 'public';
         push @privs, $class->new(
             role  => $quote ? _quote_ident($role) : $role,
-            by    => $quote ? _quote_ident($by) : $by,
+            by    => $quote ? _quote_ident($by)   : $by,
             privs => $prev,
         )
     }
