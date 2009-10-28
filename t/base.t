@@ -2,8 +2,7 @@
 
 use strict;
 use warnings;
-#use Test::More tests => 1;
-use Test::More 'no_plan';
+use Test::More tests => 223;
 
 my $CLASS;
 BEGIN {
