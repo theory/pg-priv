@@ -11,12 +11,12 @@ BEGIN {
 }
 
 ok my $priv = $CLASS->new(
-    role  => 'david',
+    to    => 'david',
     by    => 'postgres',
     privs => 'arwdxt',
 ), 'Create a priv object';
 
-is $priv->role, 'david', 'It should have proper grantee';
+is $priv->to, 'david', 'It should have proper grantee';
 is $priv->by, 'postgres', 'It should have the proper grantor';
 is $priv->privs, 'arwdxt', 'It should have the proper privs';
 is_deeply [$priv->labels], [qw(UPDATE SELECT INSERT REFERENCE DELETE TRIGGER)],

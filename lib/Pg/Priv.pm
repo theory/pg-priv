@@ -38,7 +38,7 @@ sub parse_acl {
         $prev = $privs eq '*' ? $prev : $privs;
         $role ||= 'public';
         push @privs, $class->new(
-            role  => $quote ? _quote_ident($role) : $role,
+            to    => $quote ? _quote_ident($role) : $role,
             by    => $quote ? _quote_ident($by)   : $by,
             privs => $prev,
         )
@@ -53,7 +53,7 @@ sub new {
     return $self;
 }
 
-sub role  { shift->{role}  }
+sub to    { shift->{to}  }
 sub by    { shift->{by}    }
 sub privs { shift->{privs} }
 sub labels {
@@ -215,16 +215,54 @@ Pg::Priv - PostgreSQL ACL parser and iterator
   while (my $row = $sth->fetchrow_hashref) {
       print "Table $row->{relname}:\n";
       for my $priv ( Pg::Priv->parse_acl( $row->{relacl} ) ) {
-          print '    ', $priv->by, ' granted to ', $priv->role, ': ',
+          print '    ', $priv->by, ' granted to ', $priv->to, ': ',
               join( ', ', $priv->labels ), $/;
       }
   }
 
 =head1 Description
 
-This module parses PostgreSQL ACL strings and represents the underlying
+This module parses PostgreSQL ACL arrays and represents the underlying
 privileges as objects. Use accessors on the objects to see what privileges are
 granted by whom and to whom.
+
+PostgreSQL ACLs are arrays of strings. Each string represents a single set of
+privileges granted by one role to another role. ACLs look something like this:
+
+  my $acl = [
+     'miriam=arwdDxt/miriam',
+     '=r/miriam',
+     'admin=arw/miriam',
+  ];
+
+The format of the privileges are interpreted thus (borrowed from the
+PostgreSQL Documentation,
+L<http://www.postgresql.org/docs/current/static/sql-grant.html#SQL-GRANT-NOTES>):
+
+       rolename=xxxx -- privileges granted to a role
+               =xxxx -- privileges granted to PUBLIC
+
+                   r -- SELECT ("read")
+                   w -- UPDATE ("write")
+                   a -- INSERT ("append")
+                   d -- DELETE
+                   D -- TRUNCATE
+                   x -- REFERENCES
+                   t -- TRIGGER
+                   X -- EXECUTE
+                   U -- USAGE
+                   C -- CREATE
+                   c -- CONNECT
+                   T -- TEMPORARY
+             arwdDxt -- ALL PRIVILEGES (for tables, varies for other objects)
+                   * -- grant option for preceding privilege
+
+               /yyyy -- role that granted this privilege
+
+Pg::Priv uses these rules (plus a few other gotchas here and there) to parse
+these privileges into objects. The above three privileges in the ACL array
+would thus be returned by C<parse_acl()> as three Pg::Priv objects that you
+could then interrogate.
 
 =head1 Interface
 
@@ -233,21 +271,21 @@ granted by whom and to whom.
 =head3 parse_acl
 
   for my $priv ( Pg::Priv->parse_acl($acl) ) {
-      print '    ', $priv->by, ' granted to ', $priv->role, ': ',
+      print '    ', $priv->by, ' granted to ', $priv->to, ': ',
           join( ', ', $priv->labels ), $/;
   }
 
-Takes a PostgreSQL ACL string, parsers it, and returns a list or array
-reference of Pg::Priv objects. Pass an optional second argument to specify
-that role names should be quoted as identifiers (i.e., like the PostgreSQL
-C<quote_ident()> function does.
+Takes a PostgreSQL ACL array, parses it, and returns a list or array reference
+of Pg::Priv objects. Pass an optional second argument to specify that role
+names should be quoted as identifiers (like the PostgreSQL C<quote_ident()>
+function does).
 
 =head2 Constructor
 
 =head3 new
 
   my $priv = Pg::Priv->new(
-      role  => $role,
+      to    => $to,
       by    => $by,
       privs => $priv,
   );
@@ -259,9 +297,9 @@ to want C<parse_acl()>, which will figure this stuff out for you.
 
 =head2 Instance Methods
 
-=head3 C<role>
+=head3 C<to>
 
-Returns the name of the role that has the privileges (the grantee).
+Returns the name of the role to which the privileges were granted (the grantee).
 
 =head3 C<by>
 
@@ -273,75 +311,101 @@ A string representing the privileges granted, such as C<arwdxt>.
 
 =head3 C<labels>
 
-A list or array reference of the labels for the granted privileges.
+A list or array reference of the labels for the granted privileges. These
+correspond to the uppercase labels shown in the L<description|/"Description">.
 
 =head3 C<can>
 
-  print $priv->role can', ($priv->can('r') ? '' : 'not'), ' SELECT';
-  print $priv->role can', ($priv->can('UPDATE') ? '' : 'not'), ' UPDATE';
+  print "We can read!\n" if $priv->can('r');
+  print "We can read and write!\n" if $priv->can(qw(r w));
 
-Pass in a permission character or label and this method will return true if
-that privilege is included.
+Pass in one or more privilege characters or labels and this method will return
+true if that all the privileges have been granted. If at least one of the
+specified privileges has not been granted, C<can> returns false.
 
-=head3 C<can_select>
+=head3 C<can_*>
+
+Convenience methods for verifying individual privileges:
+
+=over
+
+=item C<can_select>
 
 Returns true if the SELECT privilege has been granted.
 
-=head3 C<can_read>
+=item C<can_read>
 
 Returns true if the SELECT privilege has been granted.
 
-=head3 C<can_update>
+=item C<can_update>
 
 Returns true if the UPDATE privilege has been granted.
 
-=head3 C<can_write>
+=item C<can_write>
 
 Returns true if the UPDATE privilege has been granted.
 
-=head3 C<can_insert>
+=item C<can_insert>
 
 Returns true if the INSERT privilege has been granted.
 
-=head3 C<can_append>
+=item C<can_append>
 
 Returns true if the INSERT privilege has been granted.
 
-=head3 C<can_delete>
+=item C<can_delete>
 
 Returns true if the DELETE privilege has been granted.
 
-=head3 C<can_reference>
+=item C<can_reference>
 
 Returns true if the REFERENCE privilege has been granted.
 
-=head3 C<can_trigger>
+=item C<can_trigger>
 
 Returns true if the TRIGGER privilege has been granted.
 
-=head3 C<can_execute>
+=item C<can_execute>
 
 Returns true if the EXECUTE privilege has been granted.
 
-=head3 C<can_usage>
+=item C<can_usage>
 
 Returns true if the USAGE privilege has been granted.
 
-=head3 C<can_create>
+=item C<can_create>
 
 Returns true if the CREATE privilege has been granted.
 
-=head3 C<can_connect>
+=item C<can_connect>
 
 Returns true if the CONNECT privilege has been granted.
 
-=head3 C<can_temporary>
+=item C<can_temporary>
 
 Returns true if the TEMPORARY privilege has been granted.
 
-=head3 C<can_temp>
+=item C<can_temp>
 
 Returns true if the TEMPORARY privilege has been granted.
+
+=back
+
+=head1 See Also
+
+=over
+
+=item *
+
+PostgreSQL Documentation: GRANT: L<http://www.postgresql.org/docs/current/static/sql-grant.html#SQL-GRANT-NOTES>.
+
+=back
+
+=head1 Acknowledgments
+
+This module was originally developed under contract to Etsy, Inc.
+(L<http://www.etsy.com/>. Many thanks to them for agreeing to release it as
+open-source code!
 
 =head1 Author
 
@@ -354,13 +418,11 @@ other than all uppercase.
 
 =end comment
 
-=head1 Author
-
 David E. Wheeler <david@justatheory.com>
 
 =head1 Copyright and License
 
-Copyright (c) 2009 Etsy, Inc. Some Rights Reserved.
+Copyright (c) 2009 Etsy, Inc. and David. E. Wheeler. Some Rights Reserved.
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.

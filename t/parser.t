@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 68;
+use Test::More tests => 120;
 #use Test::More 'no_plan';
 
 my $CLASS;
@@ -83,14 +83,18 @@ for my $spec (
 ) {
     my ($desc, $acl, $expects) = @{ $spec };
     ok my @privs = $CLASS->parse_acl($acl), "Parse $desc ACL";
+
     my $count = 0;
+    my @expects = @{ $expects }; # shallow copy
     for my $priv (@privs) {
         ++$count;
-        my $exp = shift @{ $expects };
+        my $exp = shift @expects;
+
         isa_ok $priv, 'Pg::Priv', "$desc ACL priv $count";
-        is $priv->role, $exp->[0], qq{$desc ACL priv $count grantee is "$exp->[0]"};
+        is $priv->to, $exp->[0], qq{$desc ACL priv $count grantee is "$exp->[0]"};
         is $priv->by, $exp->[1], qq{$desc ACL priv $count grantor is "$exp->[1]"};
         ok $priv->can(@{ $exp->[2] }), "$desc ACL priv $count can(@{ $exp->[2] })";
+
         my %seen;
         @seen{@all_privs} = ();
         delete @seen{ @{ $exp->[2] } };
@@ -101,5 +105,28 @@ for my $spec (
             @oops = keys %seen;
             pass qq{$desc ACL priv $count should not have permissions "@oops"};
         }
+    }
+
+    # Check scalar context.
+    ok my $privs = $CLASS->parse_acl($acl), "Parse $desc ACL in scalar context";
+    is_deeply [ map { $_->privs } @$privs ],
+              [ map { $_->privs } @privs ],
+              'Should have same privs in scalar context';
+    is_deeply [ map { $_->to } @$privs ],
+              [ map { $_->to } @privs ],
+              'Should have same grantees in scalar context';
+    is_deeply [ map { $_->by } @$privs ],
+              [ map { $_->by } @privs ],
+              'Should have same grantors in scalar context';
+
+    # Check quote_ident.
+    $count = 0;
+    @expects = @{ $expects }; # shallow copy again.
+    for my $priv ($CLASS->parse_acl($acl, 1)) {
+        my $exp = shift @expects;
+        my $to  = Pg::Priv::_quote_ident $exp->[0];
+        is $priv->to, $to, qq{$desc ACL priv $count quoted grantee is '$to'};
+        my $by  = Pg::Priv::_quote_ident $exp->[1];
+        is $priv->by, $by, qq{$desc ACL priv $count quoted grantor is '$by'};
     }
 }
