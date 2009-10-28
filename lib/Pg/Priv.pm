@@ -6,29 +6,25 @@ use warnings;
 
 our $VERSION = '0.10';
 
-my (%label_for, %priv_for);
+my %label_for = (
+    r => 'SELECT',
+    w => 'UPDATE',
+    a => 'INSERT',
+    d => 'DELETE',
+    D => 'TRUNCATE',
+    x => 'REFERENCE',
+    t => 'TRIGGER',
+    X => 'EXECUTE',
+    U => 'USAGE',
+    C => 'CREATE',
+    c => 'CONNECT',
+    T => 'TEMPORARY',
+);
 
-BEGIN {
-    %label_for = (
-        r => 'SELECT',
-        w => 'UPDATE',
-        a => 'INSERT',
-        d => 'DELETE',
-        D => 'TRUNCATE',
-        x => 'REFERENCE',
-        t => 'TRIGGER',
-        X => 'EXECUTE',
-        U => 'USAGE',
-        C => 'CREATE',
-        c => 'CONNECT',
-        T => 'TEMPORARY',
-    );
+my %priv_for = map { $label_for{$_} => $_ } keys %label_for;
 
-    %priv_for = map { $label_for{$_} => $_ } keys %label_for;
-
-    # Some aliases.
-    $priv_for{TEMP} = 'T';
-}
+# Some aliases.
+$priv_for{TEMP} = 'T';
 
 sub parse_acl {
     my ($class, $acl, $quote) = @_;
@@ -60,7 +56,10 @@ sub new {
 sub role  { shift->{role}  }
 sub by    { shift->{by}    }
 sub privs { shift->{privs} }
-sub labels { map { $label_for{$_} } keys %{ shift->{parsed} } }
+sub labels {
+    wantarray ? map { $label_for{$_} } keys %{ shift->{parsed} }
+              : [ map { $label_for{$_} } keys %{ shift->{parsed} } ];
+}
 sub can   {
     my $can = shift->{parsed} or return;
     for my $what (@_) {
@@ -85,6 +84,7 @@ sub can_connect   { shift->can('c') }
 sub can_temporary { shift->can('T') }
 sub can_temp      { shift->can('T') }
 
+# ack ' RESERVED_KEYWORD' src/include/parser/kwlist.h | awk -F '"' '{ print "    " $2 }'
 my %reserved = ( map { $_ => undef } qw(
     all
     analyse
@@ -176,8 +176,7 @@ sub _quote_ident($) {
     # Can avoid quoting if ident starts with a lowercase letter or underscore
     # and contains only lowercase letters, digits, and underscores, *and* is
     # not any SQL keyword. Otherwise, supply quotes.
-    return $role if $role =~ /[_a-z](?:[_a-z0-9])?$/ && !_is_reserved $role;
-    return $role unless $role =~ /\W/;
+    return $role if $role =~ /^[_a-z](?:[_a-z0-9]+)?$/ && !_is_reserved $role;
     $role =~ s/"/""/g;
     return qq{"$role"};
 }
@@ -248,8 +247,8 @@ C<quote_ident()> function does.
 =head3 new
 
   my $priv = Pg::Priv->new(
-      role  => $role
-      by    => $by
+      role  => $role,
+      by    => $by,
       privs => $priv,
   );
 
