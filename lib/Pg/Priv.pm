@@ -4,7 +4,7 @@ use 5.6.2;
 use strict;
 use warnings;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 my %label_for = (
     r => 'SELECT',

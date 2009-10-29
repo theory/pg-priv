@@ -1,4 +1,4 @@
-Pg/Priv version 0.10
+Pg/Priv version 0.11
 ====================
 
 This module parses PostgreSQL ACL arrays and represents the underlying

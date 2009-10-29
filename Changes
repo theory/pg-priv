@@ -1,5 +1,6 @@
 Revision history for Perl extension Pg::Priv.
 
+0.11
 
 0.10  2009-10-29T20:44:23
       - Initial version, with code donted by [Etsy](http://www.etsy.com).
