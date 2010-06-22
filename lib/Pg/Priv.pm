@@ -186,17 +186,6 @@ __END__
 
 ##############################################################################
 
-=begin comment
-
-Fake-out Module::Build. Delete if it ever changes to support =head1 headers
-other than all uppercase.
-
-=head1 NAME
-
-Pg::Priv - PostgreSQL ACL parser and iterator
-
-=end comment
-
 =head1 Name
 
 Pg::Priv - PostgreSQL ACL parser and iterator
@@ -236,8 +225,8 @@ privileges granted by one role to another role. ACLs look something like this:
   ];
 
 The format of the privileges are interpreted thus (borrowed from the
-PostgreSQL Documentation,
-L<http://www.postgresql.org/docs/current/static/sql-grant.html#SQL-GRANT-NOTES>):
+L<PostgreSQL
+Documentation|http://www.postgresql.org/docs/current/static/sql-grant.html#SQL-GRANT-NOTES>):
 
        rolename=xxxx -- privileges granted to a role
                =xxxx -- privileges granted to PUBLIC
@@ -397,32 +386,24 @@ Returns true if the TEMPORARY privilege has been granted.
 
 =item *
 
-PostgreSQL Documentation: GRANT: L<http://www.postgresql.org/docs/current/static/sql-grant.html#SQL-GRANT-NOTES>.
+L<PostgreSQL Documentation: GRANT|http://www.postgresql.org/docs/current/static/sql-grant.html#SQL-GRANT-NOTES>.
 
 =back
 
 =head1 Acknowledgments
 
-This module was originally developed under contract to Etsy, Inc.
-(L<http://www.etsy.com/>. Many thanks to them for agreeing to release it as
+This module was originally developed under contract to L<Etsy,
+Inc.|http://www.etsy.com/>. Many thanks to them for agreeing to release it as
 open-source code!
 
 =head1 Author
-
-=begin comment
-
-Fake-out Module::Build. Delete if it ever changes to support =head1 headers
-other than all uppercase.
-
-=head1 AUTHOR
-
-=end comment
 
 David E. Wheeler <david@justatheory.com>
 
 =head1 Copyright and License
 
-Copyright (c) 2009 Etsy, Inc. and David. E. Wheeler. Some Rights Reserved.
+Copyright (c) 2009-2010 Etsy, Inc. and David. E. Wheeler. Some Rights
+Reserved.
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
