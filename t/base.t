@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/perl -w
 
 use strict;
 use warnings;
@@ -83,7 +83,7 @@ ok !$priv->can_connect,   'No we cannot connect';
 ok !$priv->can_temporary, 'No we cannot temporary';
 ok !$priv->can_temp,      'No we cannot temp';
 
-for my $word qw(
+for my $word (qw(
     all
     analyse
     analyze
@@ -163,7 +163,7 @@ for my $word qw(
     where
     window
     with
-) {
+)) {
     ok Pg::Priv::_is_reserved $word, "$word should be reserved";
     is Pg::Priv::_quote_ident $word, qq{"$word"}, "$word should be quoted";
 }
@@ -185,4 +185,3 @@ for my $spec (
     is Pg::Priv::_quote_ident $spec->[0], $spec->[1],
         "$spec->[0] should be quoted as $spec->[1]";
 }
-
