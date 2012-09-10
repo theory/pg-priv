@@ -13,7 +13,7 @@ Module::Build->new(
         'Test::More'       => '0.88',
     },
     requires           => {
-        'perl'              => 5.006002,
+        'perl'              => 5.008,
     },
     recommends         => {
         'Test::Pod'           => '1.41',
