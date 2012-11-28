@@ -1,5 +1,8 @@
 Revision history for Perl extension Pg::Priv.
 
+0.13
+
+
 0.12  2012-11-28T20:11:12Z
       - Dropped support for Perl 5.6.
       - Fixed test failure do to hash order randomization change in Perl 5.17.
