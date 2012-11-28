@@ -2,6 +2,7 @@ Revision history for Perl extension Pg::Priv.
 
 0.12
       - Dropped support for Perl 5.6.
+      - Fixed test failure do to hash order randomization change in Perl 5.17.
 
 0.11  2012-09-07T16:49:09Z
       - Updated Internet Pod links to use `L<text|URL> format.

@@ -19,9 +19,9 @@ ok my $priv = $CLASS->new(
 is $priv->to, 'david', 'It should have proper grantee';
 is $priv->by, 'postgres', 'It should have the proper grantor';
 is $priv->privs, 'arwdxt', 'It should have the proper privs';
-is_deeply [$priv->labels], [qw(UPDATE SELECT INSERT REFERENCE DELETE TRIGGER)],
+is_deeply [sort $priv->labels], [sort qw(UPDATE SELECT INSERT REFERENCE DELETE TRIGGER)],
     'It should return the proper labels';
-is_deeply scalar $priv->labels, [qw(UPDATE SELECT INSERT REFERENCE DELETE TRIGGER)],
+is_deeply [ sort @{ $priv->labels } ], [sort qw(UPDATE SELECT INSERT REFERENCE DELETE TRIGGER)],
     'It should return labels as an arrayref in scalar context';
 
 my @has = qw(a r w d x t);
