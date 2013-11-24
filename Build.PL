@@ -23,7 +23,7 @@ Module::Build->new(
         resources => {
             homepage    => 'http://search.cpan.org/dist/Pg-Priv/',
             bugtracker  => 'http://github.com/theory/pg-priv/issues/',
-            repository  => 'http://github.com/theory/pg-priv/tree/',
+            repository  => 'http://github.com/theory/pg-priv',
         }
     },
 )->create_build_script;
